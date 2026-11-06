@@ -1,2 +1,8 @@
 packages:
-  - "packages/*"
+  - packages/*
+allowBuilds:
+  esbuild: true
+# The Tamagui compiler evaluates `tamagui` from the project root, so its
+# @tamagui/* dependencies must resolve from there too.
+publicHoistPattern:
+  - "@tamagui/*"

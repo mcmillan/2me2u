@@ -1,6 +1,7 @@
 node_modules/
 dist/
 coverage/
+.tamagui/
 *.tsbuildinfo
 *.log
 .DS_Store
