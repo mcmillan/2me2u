@@ -1,4 +1,4 @@
-# 2me2u
+# @mcmillan/2me2u-core
 
 One model of an Allen & Heath ME personal monitoring system, parsed from and
 built into ME-1 configs (`.ME1`) and ME-U channel setups (`.meu`).
@@ -10,7 +10,7 @@ import {
   parseConfig, // files → System
   buildME1Config,
   buildMEUConfig, // System → files
-} from '2me2u';
+} from '@mcmillan/2me2u-core';
 ```
 
 Every function returns a true-myth `Result`. On failure the error is a list

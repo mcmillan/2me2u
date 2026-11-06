@@ -1,5 +1,5 @@
 {
-  "name": "2me2u",
+  "name": "@mcmillan/2me2u-core",
   "version": "0.1.0",
   "description": "Parser for Allen & Heath ME-1 personal mixer config files (.ME1)",
   "type": "module",

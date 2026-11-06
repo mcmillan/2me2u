@@ -1,5 +1,5 @@
 {
-  "name": "2me2u-workspace",
+  "name": "@mcmillan/2me2u",
   "private": true,
   "type": "module",
   "packageManager": "pnpm@12.9.1",
