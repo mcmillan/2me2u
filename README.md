@@ -12,9 +12,10 @@ the mixer itself.
 
 ## Packages
 
-| Package                  | What it is                                                                            |
-| ------------------------ | ------------------------------------------------------------------------------------- |
-| [`2me2u`](packages/core) | The library: one model of a monitoring system, read from and written to both formats. |
+| Package                                 | What it is                                                                             |
+| --------------------------------------- | -------------------------------------------------------------------------------------- |
+| [`@mcmillan/2me2u-core`](packages/core) | The library: one model of a monitoring system, read from and written to both formats.  |
+| [`@mcmillan/2me2u-web`](packages/web)   | A browser editor built on the library: load, edit, create and export, all client-side. |
 
 Each package's README covers its API. `AGENTS.md` is for anyone changing the code.
 
@@ -26,4 +27,5 @@ Requires Node 26 and pnpm (`corepack enable` picks up the pinned version).
 pnpm install
 pnpm check      # lint, typecheck, test
 pnpm build
+pnpm dev        # run the web editor at http://localhost:5173
 ```

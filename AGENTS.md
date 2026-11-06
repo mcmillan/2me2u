@@ -1,7 +1,8 @@
 # Working in this repo
 
 2me2u reads and writes Allen & Heath ME-1 (`.ME1`) and ME-U (`.meu`) files
-through one model of a monitoring system. The root `README.md` introduces the
+through one model of a monitoring system (`@mcmillan/2me2u-core`), and offers a
+browser editor on top of it (`@mcmillan/2me2u-web`). The root `README.md` introduces the
 repo and each package's own `README.md` documents its API; this file is for
 anyone (human or agent) changing the code.
 
@@ -63,7 +64,23 @@ make sure every export is described and nothing described is gone.
 - **No presets.** The ME-1's preset slots are not part of the model or the
   API. The `.ME1` schema still describes and carries their pages so files
   rewrite byte for byte; don't surface them above `formats/me1/schema.ts`.
-- **No CLI** in this package.
+- **No CLI** in the core package.
+
+## The web package
+
+- React 19 and Vite. Styling is Tamagui with the stock v6 config: use its
+  house style, which means shorthand props only (`items`, `justify`, `p`, `bg`,
+  `rounded`, …) and its flat token names (`gap="3"`, `color="color-10"`). Don't
+  loosen the config to allow long-hand props.
+- State is Jotai: one `systemAtom` holds the editable system, and exports and
+  validation issues are derived atoms. Edits are pure functions in
+  `lib/edit.ts`, applied through `editAtom`.
+- Everything runs in the browser; nothing is uploaded.
+- `pnpm-workspace.yaml` hoists `@tamagui/*`, because the Tamagui compiler
+  evaluates `tamagui` from the project root and its sibling packages must
+  resolve from there. Keep it when changing pnpm settings.
+- `packages/web/README.md` describes what the editor does; keep it in step with
+  the UI the same way the core README tracks the API.
 
 ## Tests
 
