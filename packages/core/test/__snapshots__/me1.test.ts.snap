@@ -1,0 +1,627 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`reading .ME1 configs > BEAUTIFL.ME1: keys match their snapshot 1`] = `
+[
+  {
+    "level": 0,
+    "members": [
+      {
+        "channel": 2,
+        "level": "off",
+        "pan": 37,
+      },
+      {
+        "channel": 3,
+        "level": "off",
+        "pan": 37,
+      },
+      {
+        "channel": 4,
+        "level": "off",
+        "pan": 37,
+      },
+      {
+        "channel": 5,
+        "level": "off",
+        "pan": 37,
+      },
+      {
+        "channel": 6,
+        "level": "off",
+        "pan": 37,
+      },
+      {
+        "channel": 7,
+        "level": "off",
+        "pan": 37,
+      },
+    ],
+    "name": "Kit",
+    "type": "group",
+  },
+  {
+    "level": 0,
+    "members": [
+      {
+        "channel": 8,
+        "level": "off",
+        "pan": 37,
+      },
+      {
+        "channel": 9,
+        "level": "off",
+        "pan": 37,
+      },
+      {
+        "channel": 10,
+        "level": "off",
+        "pan": 37,
+      },
+    ],
+    "name": "Perc",
+    "type": "group",
+  },
+  {
+    "level": 0,
+    "members": [
+      {
+        "channel": 11,
+        "level": "off",
+        "pan": 37,
+      },
+      {
+        "channel": 12,
+        "level": "off",
+        "pan": 37,
+      },
+    ],
+    "name": "Bass",
+    "type": "group",
+  },
+  {
+    "level": 0,
+    "members": [
+      {
+        "channel": 13,
+        "level": "off",
+        "pan": 37,
+      },
+      {
+        "channel": 14,
+        "level": "off",
+        "pan": 37,
+      },
+    ],
+    "name": "Guit 1",
+    "type": "group",
+  },
+  {
+    "level": 0,
+    "members": [
+      {
+        "channel": 15,
+        "level": "off",
+        "pan": 37,
+      },
+      {
+        "channel": 16,
+        "level": "off",
+        "pan": 37,
+      },
+    ],
+    "name": "Guit 2",
+    "type": "group",
+  },
+  {
+    "channel": 17,
+    "level": "off",
+    "pan": 37,
+    "type": "channel",
+  },
+  {
+    "channel": 18,
+    "level": "off",
+    "pan": 37,
+    "type": "channel",
+  },
+  {
+    "level": 0,
+    "members": [
+      {
+        "channel": 19,
+        "level": "off",
+        "pan": 37,
+      },
+      {
+        "channel": 20,
+        "level": "off",
+        "pan": 37,
+      },
+    ],
+    "name": "Reed 1",
+    "type": "group",
+  },
+  {
+    "level": 0,
+    "members": [
+      {
+        "channel": 21,
+        "level": "off",
+        "pan": 37,
+      },
+      {
+        "channel": 22,
+        "level": "off",
+        "pan": 37,
+      },
+    ],
+    "name": "Reed 2",
+    "type": "group",
+  },
+  {
+    "channel": 23,
+    "level": "off",
+    "pan": 37,
+    "type": "channel",
+  },
+  {
+    "channel": 25,
+    "level": "off",
+    "pan": 37,
+    "type": "channel",
+  },
+  {
+    "channel": 27,
+    "level": "off",
+    "pan": 37,
+    "type": "channel",
+  },
+  {
+    "channel": 29,
+    "level": "off",
+    "pan": 37,
+    "type": "channel",
+  },
+  {
+    "channel": 31,
+    "level": "off",
+    "pan": 37,
+    "type": "channel",
+  },
+  {
+    "channel": 1,
+    "level": "off",
+    "pan": 37,
+    "type": "channel",
+  },
+  {
+    "type": "unassigned",
+  },
+]
+`;
+
+exports[`reading .ME1 configs > CFA.ME1: keys match their snapshot 1`] = `
+[
+  {
+    "level": 0,
+    "members": [
+      {
+        "channel": 1,
+        "level": 9.62109375,
+        "pan": 37,
+      },
+      {
+        "channel": 2,
+        "level": 9.62109375,
+        "pan": 37,
+      },
+      {
+        "channel": 3,
+        "level": 9.62109375,
+        "pan": 37,
+      },
+      {
+        "channel": 4,
+        "level": 9.62109375,
+        "pan": 37,
+      },
+      {
+        "channel": 5,
+        "level": 9.62109375,
+        "pan": 37,
+      },
+      {
+        "channel": 6,
+        "level": 9.62109375,
+        "pan": 37,
+      },
+      {
+        "channel": 7,
+        "level": 9.62109375,
+        "pan": 37,
+      },
+      {
+        "channel": 8,
+        "level": 9.23046875,
+        "pan": 37,
+      },
+      {
+        "channel": 9,
+        "level": 9.23046875,
+        "pan": 37,
+      },
+      {
+        "channel": 11,
+        "level": 9.62109375,
+        "pan": 37,
+      },
+    ],
+    "name": "Drums",
+    "type": "group",
+  },
+  {
+    "level": 0,
+    "members": [
+      {
+        "channel": 13,
+        "level": 9.62109375,
+        "pan": 37,
+      },
+      {
+        "channel": 14,
+        "level": 9.62109375,
+        "pan": 37,
+      },
+      {
+        "channel": 15,
+        "level": 9.23046875,
+        "pan": 37,
+      },
+      {
+        "channel": 16,
+        "level": 9.62109375,
+        "pan": 37,
+      },
+    ],
+    "name": "Perc",
+    "type": "group",
+  },
+  {
+    "channel": 17,
+    "level": -40,
+    "pan": 37,
+    "type": "channel",
+  },
+  {
+    "channel": 19,
+    "level": "off",
+    "pan": 37,
+    "type": "channel",
+  },
+  {
+    "channel": 21,
+    "level": "off",
+    "pan": 37,
+    "type": "channel",
+  },
+  {
+    "level": 0,
+    "members": [
+      {
+        "channel": 22,
+        "level": 9.62109375,
+        "pan": 37,
+      },
+      {
+        "channel": 23,
+        "level": 8.8515625,
+        "pan": 37,
+      },
+    ],
+    "name": "Wind",
+    "type": "group",
+  },
+  {
+    "level": 0,
+    "members": [
+      {
+        "channel": 24,
+        "level": 9.62109375,
+        "pan": 37,
+      },
+      {
+        "channel": 25,
+        "level": 9.62109375,
+        "pan": 37,
+      },
+      {
+        "channel": 26,
+        "level": 9.62109375,
+        "pan": 37,
+      },
+    ],
+    "name": "Guitar",
+    "type": "group",
+  },
+  {
+    "level": 0,
+    "members": [
+      {
+        "channel": 27,
+        "level": 9.62109375,
+        "pan": 37,
+      },
+      {
+        "channel": 28,
+        "level": 9.62109375,
+        "pan": 37,
+      },
+      {
+        "channel": 29,
+        "level": 9.23046875,
+        "pan": 37,
+      },
+    ],
+    "name": "Mando",
+    "type": "group",
+  },
+  {
+    "channel": 30,
+    "level": "off",
+    "pan": 37,
+    "type": "channel",
+  },
+  {
+    "type": "unassigned",
+  },
+  {
+    "type": "unassigned",
+  },
+  {
+    "type": "unassigned",
+  },
+  {
+    "type": "unassigned",
+  },
+  {
+    "type": "unassigned",
+  },
+  {
+    "type": "unassigned",
+  },
+  {
+    "type": "unassigned",
+  },
+]
+`;
+
+exports[`reading .ME1 configs > JOSEPH.ME1: keys match their snapshot 1`] = `
+[
+  {
+    "level": -0.37890625,
+    "members": [
+      {
+        "channel": 1,
+        "level": 4.62109375,
+        "pan": 37,
+      },
+      {
+        "channel": 2,
+        "level": 5,
+        "pan": 37,
+      },
+      {
+        "channel": 3,
+        "level": 3.8515625,
+        "pan": 37,
+      },
+      {
+        "channel": 4,
+        "level": 4.23046875,
+        "pan": 37,
+      },
+      {
+        "channel": 5,
+        "level": 3.4609375,
+        "pan": 37,
+      },
+      {
+        "channel": 6,
+        "level": 5,
+        "pan": 37,
+      },
+      {
+        "channel": 7,
+        "level": 3.8515625,
+        "pan": 37,
+      },
+    ],
+    "name": "Kit",
+    "type": "group",
+  },
+  {
+    "level": 0,
+    "members": [
+      {
+        "channel": 9,
+        "level": 4.23046875,
+        "pan": 37,
+      },
+      {
+        "channel": 10,
+        "level": 3.4609375,
+        "pan": 37,
+      },
+      {
+        "channel": 11,
+        "level": 4.23046875,
+        "pan": 37,
+      },
+      {
+        "channel": 12,
+        "level": 3.4609375,
+        "pan": 37,
+      },
+      {
+        "channel": 13,
+        "level": 3.8515625,
+        "pan": 37,
+      },
+      {
+        "channel": 14,
+        "level": 3.4609375,
+        "pan": 37,
+      },
+      {
+        "channel": 15,
+        "level": 3.4609375,
+        "pan": 37,
+      },
+      {
+        "channel": 17,
+        "level": 4.23046875,
+        "pan": 37,
+      },
+    ],
+    "name": "Perc",
+    "type": "group",
+  },
+  {
+    "channel": 18,
+    "level": -0.37890625,
+    "pan": 37,
+    "type": "channel",
+  },
+  {
+    "level": 0,
+    "members": [
+      {
+        "channel": 19,
+        "level": 5,
+        "pan": 37,
+      },
+      {
+        "channel": 20,
+        "level": 3.8515625,
+        "pan": 37,
+      },
+    ],
+    "name": "Guit 1",
+    "type": "group",
+  },
+  {
+    "channel": 21,
+    "level": -0.37890625,
+    "name": "Guit 2",
+    "pan": 37,
+    "type": "channel",
+  },
+  {
+    "level": -1.1484375,
+    "members": [
+      {
+        "channel": 22,
+        "level": 4.23046875,
+        "pan": 37,
+      },
+      {
+        "channel": 23,
+        "level": 3.4609375,
+        "pan": 37,
+      },
+    ],
+    "name": "Wind",
+    "type": "group",
+  },
+  {
+    "channel": 24,
+    "level": -0.76953125,
+    "pan": 37,
+    "type": "channel",
+  },
+  {
+    "level": 0,
+    "members": [
+      {
+        "channel": 25,
+        "level": 3.8515625,
+        "pan": 37,
+      },
+      {
+        "channel": 26,
+        "level": 3.8515625,
+        "pan": 37,
+      },
+      {
+        "channel": 27,
+        "level": 3.8515625,
+        "pan": 37,
+      },
+      {
+        "channel": 28,
+        "level": 3.4609375,
+        "pan": 37,
+      },
+    ],
+    "name": "Strngs",
+    "type": "group",
+  },
+  {
+    "channel": 29,
+    "level": -0.37890625,
+    "pan": 37,
+    "type": "channel",
+  },
+  {
+    "channel": 31,
+    "level": 0.3828125,
+    "pan": 37,
+    "type": "channel",
+  },
+  {
+    "channel": 33,
+    "level": -0.37890625,
+    "pan": 37,
+    "type": "channel",
+  },
+  {
+    "channel": 35,
+    "level": 0,
+    "pan": 37,
+    "type": "channel",
+  },
+  {
+    "channel": 37,
+    "level": 0.7734375,
+    "pan": 37,
+    "type": "channel",
+  },
+  {
+    "channel": 40,
+    "level": 0,
+    "pan": 37,
+    "type": "channel",
+  },
+  {
+    "level": 0.3828125,
+    "members": [
+      {
+        "channel": 36,
+        "level": "off",
+        "pan": 37,
+      },
+      {
+        "channel": 39,
+        "level": 4.23046875,
+        "pan": 37,
+      },
+    ],
+    "name": "Vox",
+    "type": "group",
+  },
+  {
+    "level": 0,
+    "type": "auto",
+  },
+]
+`;
