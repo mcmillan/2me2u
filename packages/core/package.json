@@ -1,0 +1,28 @@
+{
+  "name": "2me2u",
+  "version": "0.1.0",
+  "description": "Parser for Allen & Heath ME-1 personal mixer config files (.ME1)",
+  "type": "module",
+  "license": "UNLICENSED",
+  "engines": {
+    "node": ">=26"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "dependencies": {
+    "true-myth": "^9.4.0"
+  }
+}
