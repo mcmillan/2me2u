@@ -8,7 +8,9 @@ anyone (human or agent) changing the code.
 ## Commands
 
 Node 26 (`.nvmrc`) and pnpm. Run `pnpm check` (lint, typecheck, test) before
-calling anything done, and `pnpm lint:fix` to let Biome format.
+calling anything done, and `pnpm lint:fix` to let Biome format. A Husky
+pre-commit hook runs Biome on staged files and fixes what it can, so a commit
+never lands unformatted; don't bypass it with `--no-verify`.
 
 ## Keep the docs true
 
