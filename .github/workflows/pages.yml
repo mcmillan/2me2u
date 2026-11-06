@@ -1,0 +1,58 @@
+name: Deploy web editor to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# One deployment at a time; don't cancel one that's already publishing.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: pnpm/action-setup@v6
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - id: pages
+        uses: actions/configure-pages@v6
+
+      # The editor imports the library's build output, so build both.
+      - name: Build
+        run: pnpm -r build
+        env:
+          BASE_PATH: ${{ steps.pages.outputs.base_path }}/
+
+      # After the build: the editor's typecheck reads the library's built types.
+      - name: Check
+        run: pnpm check
+
+      - uses: actions/upload-pages-artifact@v5
+        with:
+          path: packages/web/dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v5

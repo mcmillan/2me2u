@@ -4,6 +4,9 @@ A browser editor for ME-1 configs (`.ME1`) and ME-U channel setups (`.meu`),
 built on [`@mcmillan/2me2u-core`](../core). Everything runs in the browser;
 files never leave the machine.
 
+Live at <https://mcmillan.github.io/2me2u/>, deployed by
+`.github/workflows/pages.yml` on every push to `main`.
+
 - **Load**: drop an `.ME1`, a `.meu`, or both onto the page (or click to
   choose). Files can arrive together or one after the other.
 - **Edit**: channel names and stereo pairs; each of the 16 keys' type,
@@ -21,6 +24,7 @@ the original, so everything the editor doesn't show is kept.
 ```sh
 pnpm dev        # from the repo root, or `pnpm --filter @mcmillan/2me2u-web dev`
 pnpm build      # production build into packages/web/dist
+BASE_PATH=/2me2u/ pnpm build   # as deployed to GitHub Pages
 ```
 
 ## Stack
