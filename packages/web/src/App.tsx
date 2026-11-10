@@ -1,5 +1,5 @@
 import { useAtomValue } from 'jotai';
-import { XStack, YStack } from 'tamagui';
+import { YStack } from 'tamagui';
 import { ChannelList } from './components/ChannelList.tsx';
 import { KeyDetail } from './components/KeyDetail.tsx';
 import { KeyGrid } from './components/KeyGrid.tsx';
@@ -19,14 +19,12 @@ const Editor = () => {
       <TopBar />
       <YStack render="main" w="100%" maxW={1280} mx="auto" p="4">
         {view === 'keys' ? (
-          <XStack gap="4" flexWrap="wrap" items="flex-start">
-            <YStack flex={1} flexBasis={360} minW={300}>
-              <KeyGrid />
-            </YStack>
-            <YStack flex={1.3} flexBasis={420} minW={300} position="sticky" t={72}>
+          <YStack gap="4">
+            <KeyGrid />
+            <YStack w="100%" maxW={760} self="center">
               <KeyDetail />
             </YStack>
-          </XStack>
+          </YStack>
         ) : (
           <ChannelList />
         )}
