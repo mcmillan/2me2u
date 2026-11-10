@@ -76,6 +76,20 @@ make sure every export is described and nothing described is gone.
   validation issues are derived atoms. Edits are pure functions in
   `lib/edit.ts`, applied through `editAtom`.
 - Everything runs in the browser; nothing is uploaded.
+- Use `Action` (`components/ui.tsx`) for every button and the colours in
+  `lib/theme.ts` (`ACCENT`, `KEY_TYPE_THEME`), so a key type looks the same
+  everywhere. The orange accent is generated in `tamagui.config.ts` from the
+  stock yellow themes, including their `_level` variants; a new colour theme
+  needs those variants too, or nested buttons fall back to grey.
+- Tamagui 3 has no `hoverStyle`/`pressStyle`: use conditional values
+  (`bg={{ default: 'color-2', hover: 'color-3' }}`). Breakpoints go in values
+  the same way.
+- Typed edits pass a merge key to `editAtom` (the field's issue path, e.g.
+  `keys[3].name`) so they undo in one step. Editable controls carry
+  `data-issue-path` with the core's issue path, so the Problems list can focus
+  them.
+- Exports must stay byte-exact for unedited values: controls such as the fader
+  only report a change when the user actually changed something.
 - `pnpm-workspace.yaml` hoists `@tamagui/*`, because the Tamagui compiler
   evaluates `tamagui` from the project root and its sibling packages must
   resolve from there. Keep it when changing pnpm settings.

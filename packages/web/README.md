@@ -7,14 +7,23 @@ files never leave the machine.
 Live at <https://mcmillan.github.io/2me2u/>, deployed by
 `.github/workflows/pages.yml` on every push to `main`.
 
-- **Load**: drop an `.ME1`, a `.meu`, or both onto the page (or click to
-  choose). Files can arrive together or one after the other.
-- **Edit**: channel names and stereo pairs; each of the 16 keys' type,
-  channel or group members, label and level.
-- **Create**: _New system_ starts from a blank system.
-- **Export**: _Export .ME1_ saves the config under the config name;
-  _Export .meu_ saves `ChannelSetup.meu`. Export is disabled while the system
-  breaks an ME-1 rule, and the problems are listed with their paths.
+- **Start**: the first screen offers two paths: open your files (drop an
+  `.ME1`, a `.meu`, or both anywhere in the window, or click to choose) or
+  start from scratch. If you were editing before, it offers to pick up where
+  you left off.
+- **Keys**: the 16 keys laid out like the ME-1's, two rows of eight, each
+  showing its label, type, what it plays and its level. Select one (click or
+  arrow keys) to edit it below: its type, channel or group members, label and
+  levels, with a fader for each level.
+- **Channels**: the 40 channel names, laid out by stereo pair, with a link
+  toggle per pair and chips showing which keys use each channel.
+- **Problems**: anything the ME-1 would reject is explained in plain English
+  under the field, counted in the top bar, and one click away.
+- **Export**: the Export menu saves `{CONFIG}.ME1` (for the ME1CFG folder on
+  the ME-1's USB stick) and `ChannelSetup.meu` (for the ME-U), and says why
+  when it can't.
+- **Safety**: undo and redo (⌘Z / ⇧⌘Z), an unsaved-changes marker, and
+  autosave in the browser, so a reload or closed tab doesn't lose work.
 
 Editing a loaded file changes only what you edit: the export is written over
 the original, so everything the editor doesn't show is kept.
@@ -35,10 +44,23 @@ shorthand props only), and [Jotai](https://jotai.org) for state.
 ```
 src
 ├── main.tsx             Tamagui provider, follows the system colour scheme
-├── App.tsx              toolbar, status and layout
-├── components/          DropZone, Channels, KeyEditor, LevelInput, Issues, Panel
+├── App.tsx              welcome screen or editor; Keys and Channels views
+├── components/
+│   ├── TopBar.tsx       config name, view switch, undo/redo, problems, export
+│   ├── KeyGrid.tsx      the 16 keys in the ME-1's 2×8 layout
+│   ├── KeyDetail.tsx    editor for the selected key
+│   ├── Fader.tsx        level fader
+│   ├── MemberPicker.tsx a group's channels
+│   ├── ChannelList.tsx  channel names by stereo pair
+│   ├── Welcome.tsx, WindowDrop.tsx, ExportMenu.tsx, RestorePrompt.tsx
+│   ├── FieldError.tsx, ProblemsButton.tsx, Toasts.tsx
+│   └── ui.tsx           Action, the shared button
 └── lib
-    ├── store.ts         Jotai atoms: the system, loaded files, derived exports
+    ├── store.ts         Jotai atoms: the system, history, selection, toasts
     ├── edit.ts          pure edits on a system
-    └── files.ts         reading dropped files, downloading exports
+    ├── files.ts         reading dropped files, downloading exports
+    ├── messages.ts      plain-English problems
+    ├── session.ts       autosave and restore
+    ├── shortcuts.ts     undo/redo keys
+    └── theme.ts         accent and key-type colours
 ```
