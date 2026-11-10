@@ -19,11 +19,25 @@ const recolour = (theme: Theme, from: string, to: string): Theme =>
     }),
   ) as Theme;
 
+/**
+ * The app's accent (export, selection, focus): an orange copy of every stock
+ * yellow theme, including the nested `_level2`… variants Tamagui switches to
+ * inside surfaces, which would otherwise fall back to grey.
+ */
+const orangeThemes = Object.fromEntries(
+  Object.entries(defaultConfig.themes)
+    .filter(([name]) => /^(light|dark)_yellow(_|$)/.test(name))
+    .map(([name, theme]) => [
+      name.replace('_yellow', '_orange'),
+      recolour(theme, 'yellow', 'orange'),
+    ]),
+) as Record<`${'light' | 'dark'}_orange${'' | `_${string}`}`, Theme>;
+
 export const config = createTamagui({
   ...defaultConfig,
   themes: {
     ...defaultConfig.themes,
-    /** The app's accent: export, selection and focus. */
+    ...orangeThemes,
     light_orange: recolour(defaultConfig.themes.light_yellow, 'yellow', 'orange'),
     dark_orange: recolour(defaultConfig.themes.dark_yellow, 'yellow', 'orange'),
   },

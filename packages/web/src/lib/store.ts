@@ -49,17 +49,36 @@ const futureAtom = atom<readonly Editable[]>([]);
 export const canUndoAtom = atom((get) => get(pastAtom).length > 0);
 export const canRedoAtom = atom((get) => get(futureAtom).length > 0);
 
-/** Apply a pure edit to the system, recording it for undo. No-op edits aren't recorded. */
-export const editAtom = atom(null, (get, set, edit: (system: Editable) => Editable) => {
-  const before = get(systemAtom);
-  const after = edit(before);
-  if (after === before) return;
-  set(pastAtom, [...get(pastAtom), before].slice(-HISTORY_LIMIT));
-  set(futureAtom, []);
-  set(systemAtom, after);
-});
+/** Edits with the same merge key this close together become one undo step. */
+const MERGE_WINDOW_MS = 1500;
+let lastMerge: { key: string; at: number } | null = null;
+
+/**
+ * Apply a pure edit to the system, recording it for undo. No-op edits aren't
+ * recorded. Pass a `mergeKey` (e.g. the field's issue path, `keys[3].name`) for
+ * edits made by typing, so a word typed into one field undoes in one step.
+ */
+export const editAtom = atom(
+  null,
+  (get, set, edit: (system: Editable) => Editable, mergeKey?: string) => {
+    const before = get(systemAtom);
+    const after = edit(before);
+    if (after === before) return;
+    const now = Date.now();
+    const merge =
+      mergeKey !== undefined &&
+      lastMerge?.key === mergeKey &&
+      now - lastMerge.at < MERGE_WINDOW_MS &&
+      get(pastAtom).length > 0;
+    if (!merge) set(pastAtom, [...get(pastAtom), before].slice(-HISTORY_LIMIT));
+    lastMerge = mergeKey === undefined ? null : { key: mergeKey, at: now };
+    set(futureAtom, []);
+    set(systemAtom, after);
+  },
+);
 
 export const undoAtom = atom(null, (get, set) => {
+  lastMerge = null;
   const past = get(pastAtom);
   const previous = past.at(-1);
   if (!previous) return;
@@ -69,6 +88,7 @@ export const undoAtom = atom(null, (get, set) => {
 });
 
 export const redoAtom = atom(null, (get, set) => {
+  lastMerge = null;
   const [next, ...rest] = get(futureAtom);
   if (!next) return;
   set(futureAtom, rest);
@@ -101,6 +121,7 @@ export const dismissToastAtom = atom(null, (get, set, id: number) => {
 export const replaceSystemAtom = atom(
   null,
   (_get, set, next: { system: Editable; files?: LoadedFiles; configName?: string }) => {
+    lastMerge = null;
     set(systemAtom, next.system);
     set(baselineAtom, next.system);
     set(pastAtom, []);

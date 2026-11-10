@@ -118,6 +118,11 @@ const NewButton = () => {
   );
 };
 
+/**
+ * Two groups that wrap onto separate rows on narrow screens: identity (brand,
+ * config name) and actions. Each is capped at the bar's width so nothing
+ * pushes the page wider than the screen.
+ */
 export const TopBar = () => (
   <XStack
     render="header"
@@ -125,7 +130,9 @@ export const TopBar = () => (
     t={0}
     z={10}
     items="center"
+    justify="space-between"
     gap="3"
+    rowGap="2"
     px="4"
     py="2.5"
     flexWrap="wrap"
@@ -133,9 +140,11 @@ export const TopBar = () => (
     borderBottomWidth={1}
     borderColor="border-color"
   >
-    <Brand />
-    <ConfigName />
-    <XStack items="center" gap="2" ml="auto" flexWrap="wrap">
+    <XStack items="center" gap="3" maxW="100%" flexWrap="wrap" rowGap="2">
+      <Brand />
+      <ConfigName />
+    </XStack>
+    <XStack items="center" gap="2" maxW="100%" flexWrap="wrap" rowGap="2" ml="auto">
       <ViewSwitch />
       <History />
       <NewButton />
