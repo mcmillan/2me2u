@@ -163,3 +163,20 @@ export const keyLabel = (system: Editable, key: Key): string => {
       return key.name || 'Unknown';
   }
 };
+
+/** Set one group member's level; returns the system unchanged if it isn't a member or the level is the same. */
+export const setMemberLevel = (
+  system: Editable,
+  index: number,
+  channel: number,
+  level: Level,
+): Editable => {
+  const key = system.keys[index];
+  if (key?.type !== 'group') return system;
+  const member = key.members.find((m) => m.channel === channel);
+  if (!member || member.level === level) return system;
+  return setKey(system, index, {
+    ...key,
+    members: key.members.map((m) => (m.channel === channel ? { ...m, level } : m)),
+  });
+};
