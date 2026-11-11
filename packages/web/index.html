@@ -3,9 +3,36 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="color-scheme" content="light dark" />
-    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Crect width=%2732%27 height=%2732%27 rx=%277%27 fill=%27%23b5542a%27/%3E%3Cpath d=%27M9 22V10M16 22V14M23 22V8%27 stroke=%27white%27 stroke-width=%273%27 stroke-linecap=%27round%27/%3E%3C/svg%3E" />
     <title>2me2u</title>
+    <meta
+      name="description"
+      content="Edit Allen &amp; Heath ME-1 configs and ME-U channel setups in your browser. Files never leave your computer."
+    />
+    <meta name="color-scheme" content="light dark" />
+    <!-- Browser chrome follows the page: the Tamagui light/dark `background`. -->
+    <meta name="theme-color" content="#faf9fb" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#1c1b1e" media="(prefers-color-scheme: dark)" />
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Crect width=%2732%27 height=%2732%27 rx=%277%27 fill=%27%23b5542a%27/%3E%3Cpath d=%27M9 22V10M16 22V14M23 22V8%27 stroke=%27white%27 stroke-width=%273%27 stroke-linecap=%27round%27/%3E%3C/svg%3E" />
+    <!--
+      Critical CSS: paint the theme's background before the script runs, so
+      there's no flash of the wrong colour. Keep in step with the stock Tamagui
+      `background` and `color` of the light and dark themes.
+    -->
+    <style>
+      :root {
+        color-scheme: light dark;
+        --page-bg: #faf9fb;
+        --page-fg: #1c1b1e;
+        background-color: var(--page-bg);
+        color: var(--page-fg);
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --page-bg: #1c1b1e;
+          --page-fg: #faf9fb;
+        }
+      }
+    </style>
   </head>
   <body>
     <div id="root"></div>
