@@ -1,6 +1,14 @@
 import { LEVEL_MAX, LEVEL_MIN, type Level } from '@mcmillan/2me2u-core';
-import { type KeyboardEvent, type PointerEvent, useEffect, useRef, useState } from 'react';
-import { Input, SizableText, type TamaguiElement, Theme, XStack, YStack } from 'tamagui';
+import {
+  type CSSProperties,
+  type KeyboardEvent,
+  type PointerEvent,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from 'react';
+import { Input, SizableText, Theme, XStack, YStack } from 'tamagui';
 import { ACCENT, DISPLAY_FONT } from '../lib/theme.ts';
 
 export interface FaderProps {
@@ -97,19 +105,61 @@ const TICKS: readonly (readonly [db: Level, label: string])[] = [
 
 const THUMB_W = 12;
 
+/** The native range's integer steps across the travel; positions map onto these. */
+const STEPS = 1000;
+
+const stepOf = (level: Level) => Math.round(toPosition(level) * STEPS);
+
+/**
+ * The native range keeps its semantics, focus and pointer handling; only its
+ * track and thumb are restyled (the groove, fill and ticks are drawn behind it).
+ * WebKit and Firefox pseudo-elements stay in separate rules, since a browser
+ * drops a whole rule over a pseudo-element it doesn't know.
+ */
+const CSS = `
+.fader {
+  -webkit-appearance: none; appearance: none; position: absolute; top: 0;
+  left: ${-THUMB_W / 2}px; width: calc(100% + ${THUMB_W}px); height: 100%;
+  margin: 0; padding: 0; border: 0; border-radius: 4px; background: transparent;
+  cursor: pointer; touch-action: pan-y;
+}
+.fader:focus { outline: none; }
+.fader:focus-visible { outline: 2px solid var(--fader-ring); outline-offset: 2px; }
+.fader::-webkit-slider-runnable-track { height: 100%; border: 0; background: transparent; }
+.fader::-webkit-slider-thumb {
+  -webkit-appearance: none; appearance: none; box-sizing: border-box;
+  width: ${THUMB_W}px; height: var(--fader-thumb-h);
+  margin-top: calc((var(--fader-track-h) - var(--fader-thumb-h)) / 2);
+  border: 1px solid var(--fader-thumb-border); border-radius: 2px;
+  background: linear-gradient(var(--fader-grip), var(--fader-grip)) center / ${THUMB_W - 4}px 2px no-repeat, var(--fader-thumb);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
+}
+.fader::-moz-range-track { height: 100%; border: 0; background: transparent; }
+.fader::-moz-range-thumb {
+  box-sizing: border-box; width: ${THUMB_W}px; height: var(--fader-thumb-h);
+  border: 1px solid var(--fader-thumb-border); border-radius: 2px;
+  background: linear-gradient(var(--fader-grip), var(--fader-grip)) center / ${THUMB_W - 4}px 2px no-repeat, var(--fader-thumb);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
+}
+`;
+
 /**
  * A horizontal level fader: off at the far left, the 0 marker, +10 dB at the
- * right, on a law that gives -40…+10 dB most of the travel. Drag or click the
- * track, use the arrow keys, or type into the readout. `onChange` fires only
- * when the user changes the level, so focusing or tabbing through never rounds
- * a stored value. A drag commits once, on release.
+ * right, on a law that gives -40…+10 dB most of the travel. It is a native
+ * range input over integer steps of the travel: drag or click the track, use
+ * the arrow keys (0.5 dB, 3 dB with Shift or Page Up/Down; Home is off, End
+ * +10, 0 the marker), or type into the readout. `onChange` fires only when the
+ * user changes the level, so focusing or tabbing through never rounds a stored
+ * value. A drag commits once, on release.
  */
 export const Fader = ({ value, onChange, label, compact = false }: FaderProps) => {
   const level: Level = value ?? 0;
-  const rail = useRef<TamaguiElement>(null);
-  const drag = useRef<{ offset: number; startX: number; moved: boolean } | null>(null);
+  const input = useRef<HTMLInputElement>(null);
+  /** The pointer press in progress; `armed` once it has really moved the fader. */
+  const press = useRef<{ startX: number; armed: boolean } | null>(null);
   const lastThumbDown = useRef(0);
   const [dragLevel, setDragLevel] = useState<Level | null>(null);
+  const dragged = useRef<Level | null>(null);
   const shown = dragLevel ?? level;
 
   const [text, setText] = useState(format(level));
@@ -118,58 +168,88 @@ export const Fader = ({ value, onChange, label, compact = false }: FaderProps) =
     if (!editing) setText(format(shown));
   }, [shown, editing]);
 
+  // The range is uncontrolled so React never echoes its value back as a change;
+  // keep it on the shown level.
+  const sync = () => {
+    if (input.current) input.current.value = String(stepOf(dragged.current ?? level));
+  };
+  useLayoutEffect(sync);
+
   const change = (next: Level) => {
     if (next !== level) onChange(next);
   };
 
-  const positionAt = (clientX: number) => {
-    const rect = (rail.current as HTMLElement | null)?.getBoundingClientRect();
-    if (!rect || rect.width === 0) return 0;
-    return Math.min(1, Math.max(0, (clientX - rect.left) / rect.width));
+  const setDrag = (next: Level | null) => {
+    dragged.current = next;
+    setDragLevel(next);
   };
 
-  const onPointerDown = (e: PointerEvent<HTMLDivElement>) => {
+  const onPointerDown = (e: PointerEvent<HTMLInputElement>) => {
     if (e.button !== 0) return;
-    e.preventDefault();
-    (e.currentTarget as HTMLElement).focus();
-    e.currentTarget.setPointerCapture(e.pointerId);
-    const onThumb = (e.target as HTMLElement).closest('[data-fader-thumb]') !== null;
-    const at = positionAt(e.clientX);
-    if (onThumb) {
-      // A double-click on the thumb snaps to 0. Detected here because pointer
-      // capture retargets the browser's dblclick away from the thumb.
-      if (e.timeStamp - lastThumbDown.current < 400) {
-        lastThumbDown.current = 0;
-        drag.current = null;
-        change(0);
-        return;
-      }
-      lastThumbDown.current = e.timeStamp;
-      // Grab the thumb where it is, so a click on it doesn't move it.
-      drag.current = { offset: at - toPosition(level), startX: e.clientX, moved: false };
-      setDragLevel(level);
-    } else {
+    const el = e.currentTarget;
+    const rect = el.getBoundingClientRect();
+    const thumbX = rect.left + THUMB_W / 2 + (stepOf(level) / STEPS) * (rect.width - THUMB_W);
+    const onThumb = Math.abs(e.clientX - thumbX) <= THUMB_W / 2 + 2;
+    if (onThumb && e.timeStamp - lastThumbDown.current < 400) {
+      // A double-click on the thumb snaps to 0.
       lastThumbDown.current = 0;
-      drag.current = { offset: 0, startX: e.clientX, moved: true };
-      setDragLevel(fromPosition(at));
+      e.preventDefault();
+      el.focus();
+      press.current = null;
+      change(0);
+      return;
     }
+    lastThumbDown.current = onThumb ? e.timeStamp : 0;
+    // A press on the thumb has to travel a few pixels before it moves anything,
+    // so a click on it never nudges the level; a press on the track jumps there.
+    press.current = { startX: e.clientX, armed: !onThumb };
   };
 
-  const onPointerMove = (e: PointerEvent<HTMLDivElement>) => {
-    if (!drag.current) return;
-    if (!drag.current.moved && Math.abs(e.clientX - drag.current.startX) < 3) return;
-    drag.current.moved = true;
-    setDragLevel(fromPosition(positionAt(e.clientX) - drag.current.offset));
+  const onPointerMove = (e: PointerEvent<HTMLInputElement>) => {
+    const p = press.current;
+    if (p && !p.armed && Math.abs(e.clientX - p.startX) >= 3) p.armed = true;
   };
 
-  const endDrag = (commit: boolean) => {
-    const d = drag.current;
-    drag.current = null;
-    if (commit && d?.moved && dragLevel !== null) change(dragLevel);
-    setDragLevel(null);
+  const endPress = () => {
+    // The range's change event follows pointerup; let it commit first.
+    window.setTimeout(() => {
+      press.current = null;
+      setDrag(null);
+      sync();
+    });
   };
 
-  const onKeyDown = (e: KeyboardEvent<HTMLDivElement>) => {
+  const onInput = () => {
+    const el = input.current;
+    if (!el || !press.current) return; // Not a pointer: wait for the change event.
+    if (!press.current.armed) sync();
+    else setDrag(fromPosition(el.valueAsNumber / STEPS));
+  };
+
+  // The native change event (React's onChange is the input event): a drag
+  // commits once here, on release. Without a pointer it's assistive tech
+  // stepping the range, which moves the level as an arrow key does.
+  const onCommit = useRef(() => {});
+  onCommit.current = () => {
+    const el = input.current;
+    if (!el) return;
+    if (press.current) {
+      if (dragged.current !== null) change(dragged.current);
+      return;
+    }
+    const direction = Math.sign(el.valueAsNumber - stepOf(level));
+    if (direction !== 0) change(stepped(level, direction * 0.5));
+    sync();
+  };
+  useEffect(() => {
+    const el = input.current;
+    const listener = () => onCommit.current();
+    el?.addEventListener('change', listener);
+    return () => el?.removeEventListener('change', listener);
+  }, []);
+
+  const onKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
+    if (e.altKey || e.ctrlKey || e.metaKey) return;
     const big = e.shiftKey ? 3 : 0.5;
     const next: Level | undefined = (() => {
       switch (e.key) {
@@ -217,31 +297,26 @@ export const Fader = ({ value, onChange, label, compact = false }: FaderProps) =
   return (
     <XStack items="center" gap="2" w="100%">
       <YStack
-        role="slider"
-        tabIndex={0}
-        aria-label={label}
-        aria-valuemin={LEVEL_MIN}
-        aria-valuemax={LEVEL_MAX}
-        aria-valuenow={shown === 'off' ? LEVEL_MIN : shown}
-        aria-valuetext={shown === 'off' ? 'Off' : `${format(shown)} dB`}
         flex={1}
         minW={compact ? 96 : 140}
         maxW={compact ? 220 : undefined}
         px={THUMB_W / 2}
-        rounded="sm"
-        cursor="pointer"
-        outlineStyle="solid"
-        outlineWidth={2}
-        outlineOffset={2}
-        outlineColor={{ default: 'transparent', 'focus-visible': 'color-9' }}
-        style={{ touchAction: 'none', userSelect: 'none' }}
-        onPointerDown={onPointerDown}
-        onPointerMove={onPointerMove}
-        onPointerUp={() => endDrag(true)}
-        onPointerCancel={() => endDrag(false)}
-        onKeyDown={onKeyDown}
+        style={
+          {
+            // Resolved here, in the neutral theme, before the accent theme below.
+            '--fader-thumb': 'var(--color-1)',
+            '--fader-thumb-border': 'var(--color-8)',
+            '--fader-grip': 'var(--color-11)',
+            '--fader-ring': 'var(--color-9)',
+            '--fader-track-h': `${trackH}px`,
+            '--fader-thumb-h': `${thumbH}px`,
+          } as CSSProperties
+        }
       >
-        <YStack ref={rail} position="relative" h={trackH}>
+        <style href="fader" precedence="default">
+          {CSS}
+        </style>
+        <YStack position="relative" h={trackH}>
           {/* Groove, with the travel left of the thumb filled in the accent colour. */}
           <YStack
             position="absolute"
@@ -251,6 +326,7 @@ export const Fader = ({ value, onChange, label, compact = false }: FaderProps) =
             h={groove}
             rounded="full"
             bg="color-4"
+            pointerEvents="none"
           />
           <Theme name={ACCENT}>
             <YStack
@@ -261,6 +337,7 @@ export const Fader = ({ value, onChange, label, compact = false }: FaderProps) =
               w={`${position * 100}%`}
               rounded="full"
               bg="color-8"
+              pointerEvents="none"
             />
           </Theme>
           {TICKS.map(([db]) => {
@@ -279,24 +356,26 @@ export const Fader = ({ value, onChange, label, compact = false }: FaderProps) =
               />
             );
           })}
-          <YStack
-            data-fader-thumb
-            position="absolute"
-            l={`${position * 100}%`}
-            ml={-THUMB_W / 2}
-            t={(trackH - thumbH) / 2}
-            w={THUMB_W}
-            h={thumbH}
-            rounded="xs"
-            bg="color-1"
-            borderWidth={1}
-            borderColor="color-8"
-            items="center"
-            justify="center"
-            style={{ boxShadow: '0 1px 2px rgba(0,0,0,0.25)' }}
-          >
-            <YStack w={THUMB_W - 4} h={2} bg="color-11" rounded="full" pointerEvents="none" />
-          </YStack>
+          <Theme name={ACCENT}>
+            <input
+              ref={input}
+              type="range"
+              className="fader"
+              min={0}
+              max={STEPS}
+              step={1}
+              defaultValue={stepOf(level)}
+              aria-label={label}
+              aria-valuetext={shown === 'off' ? 'Off' : `${format(shown)} dB`}
+              style={{ accentColor: 'var(--color-8)' }}
+              onPointerDown={onPointerDown}
+              onPointerMove={onPointerMove}
+              onPointerUp={endPress}
+              onPointerCancel={endPress}
+              onInput={onInput}
+              onKeyDown={onKeyDown}
+            />
+          </Theme>
         </YStack>
         {compact ? null : (
           <YStack position="relative" h={16} aria-hidden>

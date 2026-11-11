@@ -60,6 +60,58 @@ export const TypeBadge = ({ type }: { type: Key['type'] }) => (
 /** Columns for the grid's width: the ME-1's 2×8 when there's room, else 4, else 2. */
 const columnsFor = (width: number): 8 | 4 | 2 => (width >= 640 ? 8 : width >= 300 ? 4 : 2);
 
+type Direction = 'left' | 'right' | 'up' | 'down';
+
+const DIRECTIONS: Partial<Record<string, Direction>> = {
+  ArrowLeft: 'left',
+  ArrowRight: 'right',
+  ArrowUp: 'up',
+  ArrowDown: 'down',
+};
+
+/**
+ * The tile an arrow key moves to, from where the tiles are on screen now rather
+ * than their index, so it follows the 8-, 4- and 2-column layouts alike. A tile
+ * is that way when its near edge is past the current tile's far edge; tiles in
+ * the same row or column win, nearest first, then the best-aligned of the rest.
+ */
+const nearestTile = (
+  current: HTMLElement,
+  direction: Direction,
+  tiles: readonly (HTMLElement | null)[],
+): number | undefined => {
+  const TOLERANCE = 1;
+  const from = current.getBoundingClientRect();
+  const horizontal = direction === 'left' || direction === 'right';
+  let best: { index: number; aligned: boolean; gap: number; offset: number } | undefined;
+  tiles.forEach((tile, index) => {
+    if (!tile || tile === current || tile.checkVisibility?.() === false) return;
+    const to = tile.getBoundingClientRect();
+    const gap = {
+      left: from.left - to.right,
+      right: to.left - from.right,
+      up: from.top - to.bottom,
+      down: to.top - from.bottom,
+    }[direction];
+    if (gap < -TOLERANCE) return;
+    const aligned = horizontal
+      ? to.top < from.bottom - TOLERANCE && to.bottom > from.top + TOLERANCE
+      : to.left < from.right - TOLERANCE && to.right > from.left + TOLERANCE;
+    const offset = horizontal
+      ? Math.abs(to.top + to.height / 2 - (from.top + from.height / 2))
+      : Math.abs(to.left + to.width / 2 - (from.left + from.width / 2));
+    const better =
+      !best ||
+      (aligned && !best.aligned) ||
+      (aligned === best.aligned &&
+        (aligned
+          ? gap < best.gap || (gap === best.gap && offset < best.offset)
+          : gap + 2 * offset < best.gap + 2 * best.offset));
+    if (better) best = { index, aligned, gap, offset };
+  });
+  return best?.index;
+};
+
 const Tile = ({
   index,
   keyValue: key,
@@ -199,18 +251,22 @@ export const KeyGrid = () => {
   };
 
   const onKeyDown = (i: number) => (e: KeyboardEvent) => {
-    const moves: Record<string, number> = {
-      ArrowRight: i + 1,
-      ArrowLeft: i - 1,
-      ArrowDown: i + columns,
-      ArrowUp: i - columns,
-      Home: 0,
-      End: count - 1,
-    };
-    const next = moves[e.key];
-    if (next === undefined) return;
+    if (e.defaultPrevented || e.altKey || e.ctrlKey || e.metaKey || e.shiftKey) return;
+    const current = tiles.current[i];
+    // Only when the tile itself has focus, not something inside it.
+    if (!current || e.nativeEvent.composedPath()[0] !== current) return;
+    const direction = DIRECTIONS[e.key];
+    const next =
+      e.key === 'Home'
+        ? 0
+        : e.key === 'End'
+          ? count - 1
+          : direction && nearestTile(current, direction, tiles.current);
+    // Nothing that way: leave the key to the browser, so the page can scroll.
+    if (next === undefined || next === i || !tiles.current[next]) return;
     e.preventDefault();
-    if (next >= 0 && next < count) select(next, true);
+    select(next, true);
+    tiles.current[next]?.scrollIntoView({ block: 'nearest', inline: 'nearest' });
   };
 
   const problemsOf = (i: number) => issues.filter((x) => x.path.startsWith(`keys[${i}]`)).length;
