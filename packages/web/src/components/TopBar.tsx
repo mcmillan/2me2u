@@ -1,4 +1,5 @@
 import { useAtom, useAtomValue, useSetAtom } from 'jotai';
+import { useState } from 'react';
 import { Input, SizableText, Theme, XStack, YStack } from 'tamagui';
 import {
   canRedoAtom,
@@ -12,6 +13,7 @@ import {
   viewAtom,
 } from '../lib/store.ts';
 import { ACCENT, DISPLAY_FONT } from '../lib/theme.ts';
+import { ConfirmDialog } from './ConfirmDialog.tsx';
 import { ExportMenu } from './ExportMenu.tsx';
 import { ProblemsButton } from './ProblemsButton.tsx';
 import { Action } from './ui.tsx';
@@ -123,17 +125,24 @@ const History = () => {
 const NewButton = () => {
   const reset = useSetAtom(resetAtom);
   const dirty = useAtomValue(dirtyAtom);
+  const [confirming, setConfirming] = useState(false);
   return (
-    <Action
-      kind="ghost"
-      onPress={() => {
-        if (!dirty || window.confirm('Discard your unsaved changes and start a new system?')) {
-          reset();
-        }
-      }}
-    >
-      New
-    </Action>
+    <>
+      <Action kind="ghost" onPress={() => (dirty ? setConfirming(true) : reset())}>
+        New
+      </Action>
+      <ConfirmDialog
+        open={confirming}
+        title="Start a new system?"
+        confirmLabel="Discard changes"
+        onClose={(confirmed) => {
+          setConfirming(false);
+          if (confirmed) reset();
+        }}
+      >
+        Your unsaved changes will be lost.
+      </ConfirmDialog>
+    </>
   );
 };
 
