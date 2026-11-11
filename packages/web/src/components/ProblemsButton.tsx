@@ -1,10 +1,10 @@
 import type { Issue } from '@mcmillan/2me2u-core';
 import { useAtomValue, useSetAtom } from 'jotai';
-import { useEffect, useId, useRef, useState } from 'react';
-import { SizableText, type TamaguiElement, XStack, YStack } from 'tamagui';
+import { SizableText, XStack, YStack } from 'tamagui';
 import { describeIssue, issueIsAt, issueLocation } from '../lib/messages.ts';
 import { issuesAtom, selectedKeyAtom, systemAtom, viewAtom } from '../lib/store.ts';
 import { WarningIcon } from './FieldError.tsx';
+import { Menu, MenuItem } from './Menu.tsx';
 import { Action } from './ui.tsx';
 
 const CheckIcon = () => (
@@ -60,35 +60,6 @@ export const ProblemsButton = () => {
   const system = useAtomValue(systemAtom);
   const setView = useSetAtom(viewAtom);
   const setSelectedKey = useSetAtom(selectedKeyAtom);
-  const [open, setOpen] = useState(false);
-  const listId = useId();
-  const root = useRef<TamaguiElement>(null);
-  const button = useRef<TamaguiElement>(null);
-
-  useEffect(() => {
-    if (issues.length === 0) setOpen(false);
-  }, [issues.length]);
-
-  useEffect(() => {
-    if (!open) return;
-    (root.current as HTMLElement | null)?.querySelector<HTMLElement>('[role="menuitem"]')?.focus();
-    const onPointer = (e: PointerEvent) => {
-      if (!(root.current as HTMLElement | null)?.contains(e.target as Node)) setOpen(false);
-    };
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        setOpen(false);
-        (button.current as HTMLElement | null)?.focus();
-      }
-    };
-    document.addEventListener('pointerdown', onPointer);
-    document.addEventListener('keydown', onKey);
-    return () => {
-      document.removeEventListener('pointerdown', onPointer);
-      document.removeEventListener('keydown', onKey);
-    };
-  }, [open]);
-
   if (issues.length === 0) {
     return (
       <XStack theme="green" items="center" gap="1.5" px="2" role="status">
@@ -107,7 +78,6 @@ export const ProblemsButton = () => {
     const at = issueLocation(issue);
     setView(at.view);
     if (at.key !== undefined) setSelectedKey(at.key);
-    setOpen(false);
     focusField(issue.path);
   };
 
@@ -123,88 +93,43 @@ export const ProblemsButton = () => {
   const count = `${problems.length} ${problems.length === 1 ? 'problem' : 'problems'}`;
 
   return (
-    <YStack ref={root} position="relative">
-      <Action
-        ref={button}
-        theme="red"
-        kind="subtle"
-        aria-haspopup="menu"
-        aria-expanded={open}
-        aria-controls={open ? listId : undefined}
-        aria-label={`${count} to fix before exporting`}
-        onPress={() => setOpen((o) => !o)}
-        bg={{ default: 'color-2', hover: 'color-3', press: 'color-4' }}
-        borderColor="color-7"
-        color="color-11"
+    <YStack>
+      <Menu
+        trigger={(props, open) => (
+          <Action
+            {...props}
+            theme="red"
+            kind="subtle"
+            aria-label={`${count} to fix before exporting`}
+            bg={open ? 'color-4' : { default: 'color-2', hover: 'color-3', press: 'color-4' }}
+            borderColor="color-7"
+            color="color-11"
+          >
+            <XStack items="center" gap="1.5">
+              <SizableText size="sm" color="color-11" aria-hidden>
+                <WarningIcon />
+              </SizableText>
+              <SizableText size="sm" fontWeight="600" color="color-11">
+                {count}
+              </SizableText>
+            </XStack>
+          </Action>
+        )}
+        panel={{ maxH: 360, overflow: 'scroll', p: '1', gap: '0.5' }}
       >
-        <XStack items="center" gap="1.5">
-          <SizableText size="sm" color="color-11" aria-hidden>
-            <WarningIcon />
-          </SizableText>
-          <SizableText size="sm" fontWeight="600" color="color-11">
-            {count}
-          </SizableText>
-        </XStack>
-      </Action>
-      {open && (
-        <YStack
-          id={listId}
-          role="menu"
-          aria-label="Problems to fix"
-          position="absolute"
-          t="100%"
-          r={0}
-          mt="1.5"
-          z={20}
-          w={340}
-          maxW="calc(100vw - 32px)"
-          maxH={360}
-          overflow="scroll"
-          p="1"
-          gap="0.5"
-          rounded="lg"
-          borderWidth={1}
-          borderColor="border-color"
-          bg="background"
-          shadowColor="rgba(0,0,0,0.18)"
-          shadowRadius={16}
-          shadowOffset={{ width: 0, height: 6 }}
-          onKeyDown={(e) => {
-            if (e.key !== 'ArrowDown' && e.key !== 'ArrowUp') return;
-            e.preventDefault();
-            const items = [
-              ...((root.current as HTMLElement | null)?.querySelectorAll<HTMLElement>(
-                '[role="menuitem"]',
-              ) ?? []),
-            ];
-            const at = items.indexOf(document.activeElement as HTMLElement);
-            const next = (at + (e.key === 'ArrowDown' ? 1 : -1) + items.length) % items.length;
-            items[next]?.focus();
-          }}
-        >
-          {problems.map(([id, { issue, message }]) => (
-            <Action
-              key={id}
-              role="menuitem"
-              kind="ghost"
-              h="auto"
-              py="2"
-              px="2.5"
-              justify="flex-start"
-              onPress={() => jump(issue)}
-            >
-              <XStack items="flex-start" gap="2" w="100%">
-                <SizableText size="sm" theme="red" color="color-7" pt="0.5" aria-hidden>
-                  <WarningIcon />
-                </SizableText>
-                <SizableText size="sm" text="left" flex={1}>
-                  {message}
-                </SizableText>
-              </XStack>
-            </Action>
-          ))}
-        </YStack>
-      )}
+        {problems.map(([id, { issue, message }]) => (
+          <MenuItem key={id} py="2" px="2.5" onSelect={() => jump(issue)}>
+            <XStack items="flex-start" gap="2" w="100%">
+              <SizableText size="sm" theme="red" color="color-7" pt="0.5" aria-hidden>
+                <WarningIcon />
+              </SizableText>
+              <SizableText size="sm" text="left" flex={1}>
+                {message}
+              </SizableText>
+            </XStack>
+          </MenuItem>
+        ))}
+      </Menu>
     </YStack>
   );
 };

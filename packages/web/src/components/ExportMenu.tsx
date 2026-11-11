@@ -1,6 +1,6 @@
 import { useAtomValue, useSetAtom } from 'jotai';
-import { useEffect, useId, useRef, useState } from 'react';
-import { SizableText, type TamaguiElement, Theme, XStack, YStack } from 'tamagui';
+import { useId } from 'react';
+import { SizableText, Theme, XStack, YStack } from 'tamagui';
 import { download } from '../lib/files.ts';
 import {
   configNameAtom,
@@ -11,6 +11,7 @@ import {
   toastAtom,
 } from '../lib/store.ts';
 import { ACCENT, DISPLAY_FONT } from '../lib/theme.ts';
+import { Menu, MenuItem } from './Menu.tsx';
 import { Action } from './ui.tsx';
 
 const MEU_NAME = 'ChannelSetup.meu';
@@ -22,28 +23,20 @@ interface RowProps {
   readonly disabled: boolean;
   /** Why this row in particular can't be used, shown under it. */
   readonly reason?: string | undefined;
-  readonly onPress: () => void;
+  /** The id of the note that explains why the row is disabled. */
+  readonly describedBy?: string | undefined;
+  readonly onSelect: () => void;
 }
 
-const Row = ({ title, file, hint, disabled, reason, onPress }: RowProps) => {
+const Row = ({ title, file, hint, disabled, reason, describedBy, onSelect }: RowProps) => {
   return (
-    <YStack
-      role="menuitem"
-      tabIndex={disabled ? -1 : 0}
-      aria-disabled={disabled}
+    <MenuItem
+      disabled={disabled}
+      onSelect={onSelect}
+      aria-describedby={describedBy}
       gap="0.5"
       px="3"
       py="2.5"
-      rounded="md"
-      cursor={disabled ? 'not-allowed' : 'pointer'}
-      bg={disabled ? 'transparent' : { default: 'transparent', hover: 'color-2', focus: 'color-2' }}
-      onPress={disabled ? undefined : onPress}
-      onKeyDown={(e) => {
-        if (!disabled && (e.key === 'Enter' || e.key === ' ')) {
-          e.preventDefault();
-          onPress();
-        }
-      }}
     >
       <XStack
         items="baseline"
@@ -69,49 +62,23 @@ const Row = ({ title, file, hint, disabled, reason, onPress }: RowProps) => {
           {reason}
         </SizableText>
       )}
-    </YStack>
+    </MenuItem>
   );
 };
 
 /** Export button and menu for the .ME1 and .meu. */
 export const ExportMenu = () => {
-  const [open, setOpen] = useState(false);
   const me1 = useAtomValue(me1Atom);
   const meu = useAtomValue(meuAtom);
   const issues = useAtomValue(issuesAtom);
   const configName = useAtomValue(configNameAtom);
   const markSaved = useSetAtom(markSavedAtom);
   const toast = useSetAtom(toastAtom);
-  const root = useRef<TamaguiElement>(null);
-  const menuId = useId();
-
-  useEffect(() => {
-    if (!open) return;
-    // On the web a Tamagui view is its DOM element.
-    const el = root.current as unknown as HTMLElement | null;
-    const close = (e: PointerEvent) => {
-      if (el && !el.contains(e.target as Node)) setOpen(false);
-    };
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key !== 'Escape') return;
-      setOpen(false);
-      el?.querySelector<HTMLElement>('[aria-haspopup]')?.focus();
-    };
-    document.addEventListener('pointerdown', close);
-    document.addEventListener('keydown', onKey);
-    // Move focus into the menu so keyboard users land on the first row.
-    el?.querySelector<HTMLElement>('[role=menuitem][tabindex="0"]')?.focus();
-    return () => {
-      document.removeEventListener('pointerdown', close);
-      document.removeEventListener('keydown', onKey);
-    };
-  }, [open]);
 
   const save = (data: Uint8Array | string, name: string, type: string) => {
     download(data, name, type);
     markSaved();
     toast({ message: `Saved ${name}`, tone: 'success' });
-    setOpen(false);
   };
 
   const blocked =
@@ -120,74 +87,61 @@ export const ExportMenu = () => {
       : undefined;
   const me1Name = `${configName}.ME1`;
   const unnamed = configName === '';
+  const noteId = `${useId()}-blocked`;
+  const describedBy = blocked ? noteId : undefined;
 
   return (
-    <YStack ref={root} position="relative">
-      <Theme name={ACCENT}>
-        <Action
-          kind="primary"
-          aria-haspopup="menu"
-          aria-expanded={open}
-          aria-controls={open ? menuId : undefined}
-          onPress={() => setOpen((o) => !o)}
-        >
-          Export ▾
-        </Action>
-      </Theme>
-      {open && (
-        <YStack
-          id={menuId}
-          role="menu"
-          aria-label="Export"
-          position="absolute"
-          t="100%"
-          r={0}
-          mt="1.5"
-          z={50}
-          w={340}
-          maxW="calc(100vw - 32px)"
-          p="1.5"
-          gap="1"
-          rounded="lg"
-          bg="background"
-          borderWidth={1}
-          borderColor="border-color"
-          shadowColor="shadow-color"
-          shadowRadius={16}
-          shadowOffset={{ width: 0, height: 6 }}
-        >
-          {blocked && (
-            <Theme name="red">
-              <YStack px="3" py="2" rounded="md" bg="color-2" gap="0.5" role="note">
-                <SizableText size="sm" fontWeight="700" color="color-11">
-                  {blocked}
-                </SizableText>
-                <SizableText size="xs" color="color-11">
-                  The ME-1 wouldn’t accept this system yet.
-                </SizableText>
-              </YStack>
-            </Theme>
-          )}
-          <Row
-            title="Config for the ME-1"
-            file={me1Name}
-            hint="Copy to the ME1CFG folder on the USB stick."
-            disabled={blocked !== undefined || unnamed}
-            reason={unnamed ? 'Give the config a name first' : undefined}
-            onPress={() => {
-              if (me1.isOk && !unnamed) save(me1.value, me1Name, 'application/octet-stream');
-            }}
-          />
-          <Row
-            title="Channel setup for the ME-U"
-            file={MEU_NAME}
-            disabled={blocked !== undefined || meu.isErr}
-            onPress={() => {
-              if (meu.isOk) save(meu.value, MEU_NAME, 'application/json');
-            }}
-          />
-        </YStack>
-      )}
+    <YStack>
+      <Menu
+        trigger={(props, open) => (
+          <Action
+            {...props}
+            theme={ACCENT}
+            kind="primary"
+            {...(open ? { bg: 'color-10', borderColor: 'color-10' } : {})}
+          >
+            <SizableText size="sm" fontWeight="600" color="background">
+              Export{' '}
+              <SizableText size="sm" color="background" aria-hidden>
+                ▾
+              </SizableText>
+            </SizableText>
+          </Action>
+        )}
+      >
+        {blocked && (
+          <Theme name="red">
+            <YStack id={noteId} px="3" py="2" rounded="md" bg="color-2" gap="0.5" role="note">
+              <SizableText size="sm" fontWeight="700" color="color-11">
+                {blocked}
+              </SizableText>
+              <SizableText size="xs" color="color-11">
+                The ME-1 wouldn’t accept this system yet.
+              </SizableText>
+            </YStack>
+          </Theme>
+        )}
+        <Row
+          title="Config for the ME-1"
+          file={me1Name}
+          hint="Copy to the ME1CFG folder on the USB stick."
+          disabled={blocked !== undefined || unnamed}
+          reason={unnamed ? 'Give the config a name first' : undefined}
+          describedBy={describedBy}
+          onSelect={() => {
+            if (me1.isOk && !unnamed) save(me1.value, me1Name, 'application/octet-stream');
+          }}
+        />
+        <Row
+          title="Channel setup for the ME-U"
+          file={MEU_NAME}
+          disabled={blocked !== undefined || meu.isErr}
+          describedBy={describedBy}
+          onSelect={() => {
+            if (meu.isOk) save(meu.value, MEU_NAME, 'application/json');
+          }}
+        />
+      </Menu>
     </YStack>
   );
 };
