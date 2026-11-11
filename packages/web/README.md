@@ -13,17 +13,20 @@ Live at <https://mcmillan.github.io/2me2u/>, deployed by
   you left off.
 - **Keys**: the 16 keys laid out like the ME-1's, two rows of eight, each
   showing its label, type, what it plays and its level. Select one (click or
-  arrow keys) to edit it below: its type, channel or group members, label and
+  arrow keys, which follow the layout on screen) to edit it below: its type, channel or group members, label and
   levels, with a fader for each level.
 - **Channels**: the 40 channel names, laid out by stereo pair, with a link
   toggle per pair and chips showing which keys use each channel.
 - **Problems**: anything the ME-1 would reject is explained in plain English
-  under the field, counted in the top bar, and one click away.
+  under the field (once you leave it, and announced to screen readers),
+  counted in the top bar, and one click away.
 - **Export**: the Export menu saves `{CONFIG}.ME1` (for the ME1CFG folder on
   the ME-1's USB stick) and `ChannelSetup.meu` (for the ME-U), and says why
   when it can't.
-- **Safety**: undo and redo (⌘Z / ⇧⌘Z), an unsaved-changes marker, and
-  autosave in the browser, so a reload or closed tab doesn't lose work.
+- **Safety**: undo and redo (⌘Z / ⇧⌘Z), an unsaved-changes marker, a
+  confirmation before New or a drop replaces unsaved work, and autosave in the
+  browser, so a reload or closed tab doesn't lose work. Notifications about
+  errors stay until dismissed.
 
 Editing a loaded file changes only what you edit: the export is written over
 the original, so everything the editor doesn't show is kept.
@@ -49,11 +52,13 @@ src
 │   ├── TopBar.tsx       config name, view switch, undo/redo, problems, export
 │   ├── KeyGrid.tsx      the 16 keys in the ME-1's 2×8 layout
 │   ├── KeyDetail.tsx    editor for the selected key
-│   ├── Fader.tsx        level fader
+│   ├── Fader.tsx        level fader (a native range input on the fader law)
 │   ├── MemberPicker.tsx a group's channels
 │   ├── ChannelList.tsx  channel names by stereo pair
 │   ├── Welcome.tsx, WindowDrop.tsx, ExportMenu.tsx, RestorePrompt.tsx
 │   ├── FieldError.tsx, ProblemsButton.tsx, Toasts.tsx
+│   ├── Menu.tsx         popover menu shared by Export and Problems
+│   ├── ConfirmDialog.tsx modal confirmation (native <dialog>)
 │   └── ui.tsx           Action, the shared button
 └── lib
     ├── store.ts         Jotai atoms: the system, history, selection, toasts

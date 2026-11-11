@@ -90,6 +90,17 @@ make sure every export is described and nothing described is gone.
   them.
 - Exports must stay byte-exact for unedited values: controls such as the fader
   only report a change when the user actually changed something.
+- Prefer the platform for interactive patterns: native `<dialog>` with
+  `showModal()` (`ConfirmDialog`), `popover` for menus (`Menu`) and toasts,
+  `<input type="range">` for faders. Browser policy: Baseline Widely available
+  features need no fallback; newer ones (focusgroup, invoker commands, anchor
+  positioning, `closedby`) are feature-detected with a small fallback, and no
+  polyfill packages. Tamagui's reset unsets the UA styles on `dialog` and
+  `[popover]`, so a component using them must restore the closed state
+  (`display: none` when not `[open]` / not `:popover-open`) itself.
+- Field errors show after the field loses focus (or at once when they were
+  already there) and are announced through one shared live region in
+  `FieldError.tsx`; don't make individual messages live regions.
 - `pnpm-workspace.yaml` hoists `@tamagui/*`, because the Tamagui compiler
   evaluates `tamagui` from the project root and its sibling packages must
   resolve from there. Keep it when changing pnpm settings.
