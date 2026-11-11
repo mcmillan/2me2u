@@ -15,7 +15,7 @@ import {
 import { editAtom, selectedKeyAtom, systemAtom } from '../lib/store.ts';
 import { DISPLAY_FONT, KEY_TYPE_LABEL, KEY_TYPE_THEME } from '../lib/theme.ts';
 import { Fader } from './Fader.tsx';
-import { FieldError } from './FieldError.tsx';
+import { FieldError, useTextFieldError } from './FieldError.tsx';
 import { TypeBadge } from './KeyGrid.tsx';
 import { MemberPicker } from './MemberPicker.tsx';
 import { Panel } from './Panel.tsx';
@@ -30,6 +30,7 @@ const Field = ({
   helper,
   helperId,
   path,
+  error,
   children,
 }: {
   label: string;
@@ -37,6 +38,8 @@ const Field = ({
   helper?: string;
   helperId?: string;
   path: string;
+  /** The field's own error, for text fields that time it with `useTextFieldError`. */
+  error?: ReactNode;
   children: ReactNode;
 }) => (
   <YStack gap="1.5">
@@ -55,7 +58,7 @@ const Field = ({
         {helper}
       </SizableText>
     )}
-    <FieldError path={path} />
+    {error === undefined ? <FieldError path={path} /> : error}
   </YStack>
 );
 
@@ -172,24 +175,33 @@ const LabelField = ({
 }) => {
   const edit = useSetAtom(editAtom);
   const id = useId();
+  const path = `keys[${index}].name`;
+  const { inputProps, error } = useTextFieldError(path, `${id}-help`);
   return (
     <Field
       label="Label"
       htmlFor={id}
       helper={helper}
       helperId={`${id}-help`}
-      path={`keys[${index}].name`}
+      path={path}
+      error={error}
     >
       <Input
         id={id}
         size="sm"
         maxLength={6}
+        pattern="[0-9A-Za-z ]{1,6}"
         value={value}
         placeholder={placeholder}
         fontFamily={DISPLAY_FONT}
-        onChangeText={(name) => edit((s) => setKeyName(s, index, name), `keys[${index}].name`)}
-        data-issue-path={`keys[${index}].name`}
-        aria-describedby={`${id}-help`}
+        onChangeText={(name) => edit((s) => setKeyName(s, index, name), path)}
+        data-issue-path={path}
+        autoComplete="off"
+        autoCorrect="off"
+        autoCapitalize="none"
+        spellCheck={false}
+        enterKeyHint="done"
+        {...inputProps}
       />
     </Field>
   );

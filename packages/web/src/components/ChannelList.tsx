@@ -11,7 +11,7 @@ import { H2, Input, SizableText, Theme, XStack, YStack } from 'tamagui';
 import { type Editable, isStereo, keyLabel, setChannelName, setStereo } from '../lib/edit.ts';
 import { editAtom, systemAtom } from '../lib/store.ts';
 import { ACCENT, DISPLAY_FONT } from '../lib/theme.ts';
-import { FieldError } from './FieldError.tsx';
+import { useTextFieldError } from './FieldError.tsx';
 import { Action } from './ui.tsx';
 
 interface KeyUse {
@@ -113,6 +113,8 @@ interface RowProps {
 
 const ChannelRow = ({ channel, name, side, uses }: RowProps) => {
   const edit = useSetAtom(editAtom);
+  const path = `channels[${channel - 1}].name`;
+  const { inputProps, error } = useTextFieldError(path);
   return (
     <YStack gap="0.5">
       <XStack items="center" gap="2">
@@ -142,20 +144,20 @@ const ChannelRow = ({ channel, name, side, uses }: RowProps) => {
           value={name}
           fontFamily={DISPLAY_FONT}
           bg="background"
-          onChangeText={(next) =>
-            edit((s) => setChannelName(s, channel, next), `channels[${channel - 1}].name`)
-          }
+          onChangeText={(next) => edit((s) => setChannelName(s, channel, next), path)}
           onKeyDown={moveFocus(channel)}
           aria-label={`Channel ${channel} name`}
-          data-issue-path={`channels[${channel - 1}].name`}
+          data-issue-path={path}
           autoComplete="off"
+          autoCorrect="off"
+          autoCapitalize="none"
           spellCheck={false}
+          enterKeyHint={channel < CHANNEL_COUNT ? 'next' : 'done'}
+          {...inputProps}
         />
         <KeyChips uses={uses} />
       </XStack>
-      <YStack pl={42}>
-        <FieldError path={`channels[${channel - 1}].name`} />
-      </YStack>
+      {error && <YStack pl={42}>{error}</YStack>}
     </YStack>
   );
 };

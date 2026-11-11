@@ -67,10 +67,19 @@ const ConfigName = () => {
         size="sm"
         w={116}
         maxLength={8}
+        pattern="[0-9A-Z_\-]{0,8}"
         value={configName}
         fontFamily={DISPLAY_FONT}
         onChangeText={(v) => setConfigName(v.toUpperCase().replace(/[^0-9A-Z_-]/g, ''))}
         aria-label="Config name, up to 8 characters; the ME-1 shows it as the config's name"
+        autoComplete="off"
+        autoCorrect="off"
+        // Tamagui maps autoCapitalize="characters" to "off"; set the attribute itself.
+        ref={(el) => {
+          if (el instanceof HTMLElement) el.setAttribute('autocapitalize', 'characters');
+        }}
+        spellCheck={false}
+        enterKeyHint="done"
       />
       {dirty && (
         <Theme name={ACCENT}>
